@@ -23,7 +23,6 @@ pipeline {
 			steps {
 				sh echo $name
 				sh echo "${name}"
-				sh print ${name}"
 				println "${name}"
 			}
 		}
