@@ -2,16 +2,12 @@ pipeline {
 
 	agent any
 	
+	environment {
+		name = "Santosh Goswami"
+	}
+	
 	
 	stages {
-		stage('Variable declaration') {
-			steps {
-				script {
-					def leaders_email_dev = 'neha.gupta@india.nec.com, manpreet.singh@india.nec.com'
-					def name = 'Santosh Goswami'
-				}
-			}
-		}
 		
 		stage('Git Checkout') {
 			steps {
@@ -21,7 +17,7 @@ pipeline {
 		
 		stage('Test 1') {
 			steps {
-				echo name
+				sh echo ${name}
 			}
 		}
 	}
