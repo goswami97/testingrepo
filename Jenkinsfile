@@ -8,6 +8,7 @@ pipeline {
 			steps {
 				script {
 					def leaders_email_dev = 'neha.gupta@india.nec.com, manpreet.singh@india.nec.com'
+					def name = 'Santosh Goswami'
 				}
 			}
 		}
@@ -20,7 +21,10 @@ pipeline {
 		
 		stage('Test 1') {
 			steps {
-				sh echo ${leaders_email_dev}
+				sh echo ${name}
+				sh print${name}
+				println ${name}
+				println "${name}"
 			}
 		}
 	}
