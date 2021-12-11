@@ -20,7 +20,7 @@ pipeline {
 		
 		stage('Test 1') {
 			steps {
-				sh echo $leaders_email_dev
+				sh echo ${leaders_email_dev}
 			}
 		}
 	}
