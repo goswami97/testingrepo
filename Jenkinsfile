@@ -21,7 +21,7 @@ pipeline {
 		
 		stage('Test 1') {
 			steps {
-				println "${server}"
+				echo name
 			}
 		}
 	}
