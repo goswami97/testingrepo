@@ -1,29 +1,32 @@
-pipeline {
+pipeline{
 
 	agent any
 	
-	environment {
-		name = "Santosh Goswami"
+	parameters{
+		choice(
+			name: 'environment',
+			choices: "deployDev\ndeployTest\ndeployUat",
+			description: 'Choose environment'
+		)
 	}
 	
-	
-	stages {
+	stages{
 		
-		stage('Git Checkout') {
-			steps {
-				git branch: 'main', url: 'https://github.com/goswami97/linux.git'
-			}
-		}
-		
-		stage('Test 1') {
-			steps {
-				echo "${name}"
+		stage('Deployment'){
+			steps{
+				echo "Deployment started"
+				script{
+					if("$environment" == "deployDev"){
+						echo "This is Development stage"
+					}else if("$environment" == "deployTest"){
+						echo "This is Test stage"
+					}else if("$environment" == "deployUat"){
+						echo "This is UAT stage"
+					}else{
+						echo "This is Default"
+					}
+				}
 			}
 		}
 	}
-	
-	
-	
-	
-	
 }
