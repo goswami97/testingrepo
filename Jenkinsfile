@@ -22,7 +22,8 @@ pipeline {
 		stage('Test 1') {
 			steps {
 				sh echo $name
-				sh print${name}
+				sh echo "${name}"
+				sh print ${name}"
 				println "${name}"
 			}
 		}
