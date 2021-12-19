@@ -1,0 +1,76 @@
+pipeline{
+
+    agent any
+    tools{
+        maven "Maven"
+    }
+    stages{
+
+        stage('Git checkout'){
+            steps{
+                git branch: 'master', url: 'https://github.com/goswami97/testingrepo.git'
+            }
+        }
+        stage('Execute Maven'){
+            steps{
+                script{
+                    sh '''
+                    mvn package
+                    '''
+                }
+            }
+        }
+        stage('Copy to build forlder'){
+
+            steps{
+                script{
+                    sh '''
+                    scp /var/lib/jenkins/workspace/ScriptedPipeline/target/*.war /home/projectX/
+                    '''
+                }
+            }
+        }
+        stage('Docker Build and Tag'){
+
+            steps{
+
+                script{
+
+                    sh '''
+                    cd /home/projectX/
+                    docker login --username "$dockerid" --password "$dockerpass"
+                    docker build -t samplewebapp:latest .
+                    docker tag samplewebapp santoshgoswami/samplewebapp:latest
+                    '''
+                }
+            }
+        }
+        stage('Docker image push to docker hub'){
+
+            steps{
+
+                script{
+                        sh '''
+                        docker push santoshgoswami/samplewebapp:latest
+                        #docker push santoshgoswami/samplewebapp:$BUILD_NUMBER
+                        '''
+                }
+            }
+        }
+        stage('Deploy container in Remote server'){
+
+            steps{
+
+                script{
+                    
+                    sh '''
+                    ssh jnsadmin@172.31.33.26 'docker rm $(docker ps -qa) -f'
+                    docker -H ssh://jnsadmin@172.31.33.26 run -d -p 8000:8080 santoshgoswami/samplewebapp
+                    '''
+                }
+            }
+        }
+
+
+    }
+}
