@@ -19,7 +19,7 @@ pipeline{
 					if("$environment" == "deployDev"){
 						echo "This is Development stage"
 						
-						git branch: 'main', url: 'https://goswami97:"$githubAccessToken"@github.com/goswami97/linux.git'
+						git branch: 'main', url: 'https://goswami97:"$githubAccessToken"@github.com/goswami97/testingrepo.git'
 						subject= "${currentBuild.projectName} - Build # ${currentBuild.number}"
 						body = '''Hi,
 We would like to inform you CICD trigger has been initiated.
