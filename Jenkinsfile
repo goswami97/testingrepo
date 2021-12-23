@@ -129,33 +129,19 @@ pipeline{
             }
         }
         
-        stage('Test'){
+        stage('Verificaton'){
             steps{
                 script{
-                    if("$action" == "deployTest"){
-                    sh '''
-                    echo "This is Testing stage"
-                    '''
-                    }
+		    output=$(cat /tmp/deployment_status.txt)
+                    if("$output" == "FAIL"){
+                    	echo "It's Failed"
+		    }else{
+		    	echo "It's Success"
+		    }
                 }
             }
         }
-        
-        stage('UAT'){
-            steps{
-                script{
-                    if("$action" == "deployUat"){
-                        sh '''
-                        echo "This is Uat stage"
-                        '''
-                    }
-                }
-            }
-        }
-        
-        
-        
-        
-        
+      
+	    
     }
 }
