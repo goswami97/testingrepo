@@ -2,10 +2,6 @@ pipeline{
     
     agent any
     
-    parameters{
-        choice(name: 'action', choices: ['deployDev', 'deployTest', 'deployUat'], description: 'Choose environment')
-    }
-    
     stages{
         
         stage('Git Checkout'){
@@ -29,26 +25,24 @@ pipeline{
         stage('Git tag'){
             steps{
                 script{
-                    if("$action" == "deployDev"){
-                        sh '''
-                        LATEST_TAG=$(git  describe --tag | awk -F "-" '{print $1}')
-		                major=$(echo "$LATEST_TAG" | awk -F "." '{print $1}')
-		                minor=$(echo "$LATEST_TAG" | awk -F "." '{print $2}')
-		                patch=$(echo "$LATEST_TAG" | awk -F "." '{print $3}')
+                    sh '''
+                    LATEST_TAG=$(git  describe --tag | awk -F "-" '{print $1}')
+		            major=$(echo "$LATEST_TAG" | awk -F "." '{print $1}')
+		            minor=$(echo "$LATEST_TAG" | awk -F "." '{print $2}')
+		            patch=$(echo "$LATEST_TAG" | awk -F "." '{print $3}')
 
-		                echo "major $major"
-		                echo "minor $minor"
-		                echo "patch $patch"
+		            echo "major $major"
+		            echo "minor $minor"
+		            echo "patch $patch"
 
-		                newpatch=$(expr $patch + 1)
-		                echo "new patch $newpatch"
+		            newpatch=$(expr $patch + 1)
+		            echo "new patch $newpatch"
 
-		                new_tag="${major}.${minor}.${newpatch}"
-		                echo "the new git tag generated $new_tag"
+		            new_tag="${major}.${minor}.${newpatch}"
+		            echo "the new git tag generated $new_tag"
                     
-		                echo $new_tag > /tmp/buildNo
-                        '''
-                    }
+		            echo $new_tag > /tmp/buildNo
+                    '''                   
                 }
             }
         }
@@ -56,14 +50,12 @@ pipeline{
         stage('Code build'){
             steps{
                 script{
-                    if("$action" == "deployDev"){
-                        sh '''
-                        mvn clean package
-                        new_tag=$(cat /tmp/buildNo)
-                        git tag "$new_tag"
-		                git push https://goswami97:"$githubAccessToken"@github.com/goswami97/testingrepo.git --tags
-                        '''
-                    }
+                    sh '''
+                    mvn clean package
+                    new_tag=$(cat /tmp/buildNo)
+                    git tag "$new_tag"
+		            git push https://goswami97:"$githubAccessToken"@github.com/goswami97/testingrepo.git --tags
+                    '''
                 }
             }
         }
@@ -71,14 +63,12 @@ pipeline{
         stage('Docker Build and Tag'){
             steps{
                 script{
-                    if("$action" == "deployDev"){
-                        sh '''
-                        cd /home/projectX/
-                        new_tag=$(cat /tmp/buildNo)
-                        docker login --username "$dockerid" --password "$dockerpass"
-                        docker build -t santoshgoswami/samplewebapp:$new_tag .
-                        '''
-                    }
+                    sh '''
+                    cd /home/projectX/
+                    new_tag=$(cat /tmp/buildNo)
+                    docker login --username "$dockerid" --password "$dockerpass"
+                    docker build -t santoshgoswami/samplewebapp:$new_tag .
+                    '''
                 }
             }
         }
@@ -86,12 +76,10 @@ pipeline{
         stage('Docker image push to docker hub'){
             steps{
                 script{
-                    if("$action" == "deployDev"){
-                        sh '''
-                        new_tag=$(cat /tmp/buildNo)
-                        docker push santoshgoswami/samplewebapp:$new_tag
-                        '''
-                    }
+                    sh '''
+                    new_tag=$(cat /tmp/buildNo)
+                    docker push santoshgoswami/samplewebapp:$new_tag
+                    '''
                 }
             }
         }
@@ -99,13 +87,11 @@ pipeline{
         stage('Deploy container in Remote server'){
             steps{
                 script{
-                    if("$action" == "deployDev"){
-                        sh '''
-                        new_tag=$(cat /tmp/buildNo)
-                        ssh jnsadmin@172.31.33.26 'docker rm $(docker ps -qa) -f'
-                        docker -H ssh://jnsadmin@172.31.33.26 run -d -p 8000:8080 santoshgoswami/samplewebapp:$new_tag
-                        '''
-                    }
+                    sh '''
+                    new_tag=$(cat /tmp/buildNo)
+                    ssh jnsadmin@172.31.33.26 'docker rm $(docker ps -qa) -f'
+                    docker -H ssh://jnsadmin@172.31.33.26 run -d -p 8000:8080 santoshgoswami/samplewebapp:$new_tag
+                    '''
                 }
             }
         }
@@ -129,19 +115,25 @@ pipeline{
             }
         }
         
-        stage('Verificaton'){
+        stage('Verification'){
             steps{
                 script{
-		    output=$(cat /tmp/deployment_status.txt)
-                    if("$output" == "FAIL"){
-                    	echo "It's Failed"
-		    }else{
-		    	echo "It's Success"
-		    }
+                    sh '''
+                    output=$(cat /tmp/deployment_status.txt)
+                    if [[ "$output" -eq "FAIL" ]]
+                    then
+                        echo "FAIL Deployment"
+                    else
+                        echo "SUCCESS Deployment"
+                    fi
+                    
+                    echo "This is Verification stage"
+                    '''
                 }
             }
         }
-      
-	    
+        
+        
+        
     }
 }
