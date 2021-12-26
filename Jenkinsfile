@@ -66,7 +66,7 @@ pipeline{
                 script{
                     withCredentials([usernamePassword(credentialsId: 'dockerCred', passwordVariable: 'dockerPass', usernameVariable: 'dockerID')]) {
                         sh '''
-                        new_tag=$(cat /tmp/buildNo)
+                        new_tag=$(cat /tmp/buildNo.txt)
                         cd /home/projectX/
                         docker login --username "$dockerID" --password "$dockerPass"
                         docker build -t santoshgoswami/samplewebapp:$new_tag .
@@ -89,7 +89,7 @@ pipeline{
             steps{
                 script{
                     sh '''
-                    new_tag=$(cat /tmp/buildNo)
+                    new_tag=$(cat /tmp/buildNo.txt)
                     cont_ID=$(ssh jnsadmin@172.30.70.184 'docker ps -qa --filter name=samplewebapp')
                     ssh jnsadmin@172.30.70.184 docker rm "${cont_ID}" -f
                     docker -H ssh://jnsadmin@172.30.70.184 run --name samplewebapp  -d -p 8000:8080 santoshgoswami/samplewebapp:$new_tag       
@@ -102,7 +102,7 @@ pipeline{
                 sleep 30
                 withCredentials([string(credentialsId: 'githubAccessToken', variable: 'githubAccessToken')]) {
                     sh '''
-                    new_tag=$(cat /tmp/buildNo)
+                    new_tag=$(cat /tmp/buildNo.txt)
                     status=$(curl -so /dev/null -w '%{response_code}' http://172.30.70.184:8000/LoginWebApp-1/) || true
                     if [[ "$status" -eq 200 ]]
                     then
