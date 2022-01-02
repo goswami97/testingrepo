@@ -1,0 +1,42 @@
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building LoginWebApp Maven Webapp 1
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ LoginWebApp ---
+[INFO] Deleting /root/testingrepo/target
+[INFO] 
+[INFO] --- maven-resources-plugin:2.5:resources (default-resources) @ LoginWebApp ---
+[debug] execute contextualize
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory /root/testingrepo/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ LoginWebApp ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.5:testResources (default-testResources) @ LoginWebApp ---
+[debug] execute contextualize
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory /root/testingrepo/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ LoginWebApp ---
+[INFO] Not compiling test sources
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.10:test (default-test) @ LoginWebApp ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-war-plugin:2.4:war (default-war) @ LoginWebApp ---
+[INFO] Packaging webapp
+[INFO] Assembling webapp [LoginWebApp] in [/root/testingrepo/target/LoginWebApp-1]
+[INFO] Processing war project
+[INFO] Copying webapp resources [/root/testingrepo/src/main/webapp]
+[INFO] Webapp assembled in [28 msecs]
+[INFO] Building war: /root/testingrepo/target/LoginWebApp-1.war
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 0.889s
+[INFO] Finished at: Sun Jan 02 09:09:29 IST 2022
+[INFO] Final Memory: 10M/225M
+[INFO] ------------------------------------------------------------------------
