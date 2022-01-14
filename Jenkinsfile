@@ -1,3 +1,4 @@
+
 pipeline{
 	agent any
 	tools{
@@ -228,18 +229,24 @@ pipeline{
 						def msg=readFile('/tmp/commitID').trim()
 						
 						subject= "FDA - Build # ${currentBuild.number} - DEV Deployment Successful"
-                        body="<html><body>Hi all,<br><br>FDA Container has been deployed on DEV environment.<br>URL: http://$remoteServer:8000/LoginWebApp-1/<br>${msg}<br><br>Regards,<br>DevOps Team.</body></html>"
-                        mail_to="santoshgoswami691@gmail.com"
+                        //body="<html><body>Hi all,<br><br>FDA Container has been deployed on DEV environment.<br>URL: http://$remoteServer:8000/LoginWebApp-1/<br>${msg}<br><br>Regards,<br>DevOps Team.</body></html>"
+                        body= "\n FDA Container has been deployed on QA environment. \n\n FDA Container Version: ${ver} \n URL: https://$TEST_APP_NAME_1.azurewebsites.net/AdminPortal/  \n\n URL: https://$TEST_APP_NAME_2.azurewebsites.net/AdminPortal/"
+	
+						mail_to="santoshgoswami691@gmail.com"
                         mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
 
                         subject= "FDA - Build # ${currentBuild.number} -- DEV Revert Request"
-                        body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:red;border-color:red;border:2px solid red;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to revert to previous deployment click on below button.<br><br>Current Deployed FDA Container Version : ${ver}<br><br><table><tr><td class=button><a class=link href=#>Revert</a></td><td></td><td></td></tr></table></body></html>"
-                        mail_to="santoshgoswami691@gmail.com"
+                        //body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:red;border-color:red;border:2px solid red;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to revert to previous deployment click on below button.<br><br>Current Deployed FDA Container Version : ${ver}<br><br><table><tr><td class=button><a class=link href=#>Revert</a></td><td></td><td></td></tr></table></body></html>"
+                        body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:red;border-color:red;border:2px solid red;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to revert to previous deployment click on below button.<br><br>Current Deployed FDA Container Version : ${ver}<br><br><table><tr><td class=button><a class=link href=https://jenkins-psic.necect.com/job/SA_SaaS_Dev/buildWithParameters?action=testRollback>Revert</a></td><td></td><td></td></tr></table></body></html>"
+		
+						mail_to="santoshgoswami691@gmail.com"
                         mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
                                                             
                         subject= "FDA - Build # ${currentBuild.number} -- QA Deployment Request"
-                        body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:green;border-color:green;border:2px solid green;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to deploy FDA container on QA environment click on below button.<br><br>FDA Container Version: ${ver}<br><br><table><tr><td class=button><a class=link href=#>Approve</a></td><td></td><td></td></tr></table></body></html>"
-                        mail_to="santoshgoswami691@gmail.com"
+                        //body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:green;border-color:green;border:2px solid green;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to deploy FDA container on QA environment click on below button.<br><br>FDA Container Version: ${ver}<br><br><table><tr><td class=button><a class=link href=#>Approve</a></td><td></td><td></td></tr></table></body></html>"
+                        body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:green;border-color:green;border:2px solid green;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to deploy FDA container on UAT environment click on below button.<br><br>FDA Container Version: ${ver}<br><br><table><tr><td class=button><a class=link href=https://jenkins-psic.necect.com/job/SA_SaaS_Dev/buildWithParameters?action=deployUat>Approve</a></td><td></td><td></td></tr></table></body></html>"
+		
+						mail_to="santoshgoswami691@gmail.com"
                         mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
                             
                         echo 'Mail Sent'
