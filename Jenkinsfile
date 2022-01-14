@@ -1,3 +1,4 @@
+def remoteServer='192.168.1.6'
 pipeline{
 	agent any
 	tools{
