@@ -58,8 +58,72 @@ pipeline{
 				}
 			}
 		}
-		
-		
+		stage('Docker Image Build and Tag'){
+			steps{
+				script{
+					withCredentials([usernamePassword(credentialsId: 'dockerCred', passwordVariable: 'dockerPass', usernameVariable: 'dockerID')]) {
+                        sh '''
+                        new_tag=$(cat /tmp/gitTag)
+                        cp $WORKSPACE/target/*.war /home/projectX
+                        cd /home/projectX/
+                        docker login --username "$dockerID" --password "$dockerPass"
+                        docker build -t santoshgoswami/samplewebapp:$new_tag .
+                        
+                        rm /home/projectX/*.war -f
+                        '''   
+                    }
+				}
+			}
+			post{
+				failure{
+					script{
+						echo 'This is Docker image build stage'	
+					}
+				}
+			}
+		}
+		stage('Docker image push to docker hub'){
+			steps{
+				script{
+					sh '''
+					new_tag=$(cat /tmp/gitTag)
+                    docker push santoshgoswami/samplewebapp:$new_tag
+					'''
+				}
+			}
+			post{
+				failure{
+					script{
+						echo 'This is Docker image push stage'	
+					}
+				}
+			}
+		}
+		stage('Deploy container in Remote server'){
+			steps{
+				script{
+					sh '''
+                    new_tag=$(cat /tmp/gitTag)
+                    cont_ID=$(ssh jnsadmin@$remoteServer 'docker ps -qa --filter name=samplewebapp')
+                    if [[ -z "$cont_ID" ]];
+                    then
+                        docker -H ssh://jnsadmin@$remoteServer run --name samplewebapp  -d -p 8000:8080 santoshgoswami/samplewebapp:$new_tag       
+					else
+						ssh jnsadmin@$remoteServer docker rm "${cont_ID}" -f
+						docker -H ssh://jnsadmin@$remoteServer run --name samplewebapp  -d -p 8000:8080 santoshgoswami/samplewebapp:$new_tag       
+                    
+                    fi
+					'''
+				}
+			}
+			post{
+				failure{
+					script{
+						echo 'This is Deployment stage'	
+					}
+				}
+			}
+		}
 		
 		
 	}
