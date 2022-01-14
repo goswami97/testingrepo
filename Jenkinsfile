@@ -21,7 +21,8 @@ pipeline{
 			steps{
 				sh '''
 				new_tag=$(cat /tmp/gitTag)
-				sed -i "s/Login Page/Login Page : $new_tag/g" /var/lib/jenkins/workspace/$JOB_NAME/src/main/webapp/index.jsp
+				$WORKSPACE/src/main/webapp/index.jsp
+				sed -i "s/Login Page/Login Page : $new_tag/g" $WORKSPACE/src/main/webapp/index.jsp
                 mvn clean package > /tmp/buildlog
 				'''
 			}
