@@ -12,8 +12,35 @@ pipeline{
 	stages{
 		stage('Git Checkout'){
 			steps{
-				git branch: 'dev', url: 'https://github.com/goswami97/testingrepo.git'
-				
+				git branch: 'dev', url: 'https://github.com/goswami97/mytestappdouble7.git'
+				script{
+					subject="${currentBuild.projectName} - Build # ${currentBuild.number}"
+                    body="<html><body>Hi all,<br><br>CI-CD Pipeline has been initiated.<br><br>Regards,<br>DevOps Team.</body></html>"
+                    mail_to="santoshgoswami691@gmail.com"
+                    mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+					
+					sh '''
+                    LATEST_TAG=$(git  describe --tag | awk -F "-" '{print $1}')
+                    major=$(echo "$LATEST_TAG" | awk -F "." '{print $1}')
+                    minor=$(echo "$LATEST_TAG" | awk -F "." '{print $2}')
+                    patch=$(echo "$LATEST_TAG" | awk -F "." '{print $3}')
+
+                    echo "major $major"
+                    echo "minor $minor"
+                    echo "patch $patch"
+
+                    newpatch=$(expr $patch + 1)
+                    echo "new patch $newpatch"
+
+                    new_tag="${major}.${minor}.${newpatch}"
+                    echo "the new git tag generated $new_tag"
+                    
+                    commit_id=$(git log --pretty=oneline|head -1| awk '{print $1}')
+                    
+                    echo $commit_id > /tmp/commitID
+                    echo $new_tag > /tmp/gitTag     
+                    '''
+				}
 			}
 			post{
 				failure{
