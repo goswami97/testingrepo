@@ -1,4 +1,3 @@
-def remoteServer='192.168.1.6'
 pipeline{
 	agent any
 	tools{
@@ -6,6 +5,9 @@ pipeline{
 	}
 	parameters{
         booleanParam(name: 'sonar', defaultValue: false, description: 'want to do Sonarqube test')
+    }
+	environment{
+        remoteServer = '192.168.1.6'
     }
 	stages{
 		stage('Git Checkout'){
