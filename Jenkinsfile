@@ -18,7 +18,11 @@ pipeline{
 			post{
 				failure{
 					script{
-						echo 'This is Checkout stage'
+						subject="${currentBuild.projectName} - Build # ${currentBuild.number}"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while building code.<br>${build_logs}<br><br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+						
 					}
 				}
 			}
@@ -34,7 +38,11 @@ pipeline{
 			post{
 				failure{
 					script{
-						echo 'This is Code build stage'
+						subject="${currentBuild.projectName} - Build # ${currentBuild.number}"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while building code.<br>${build_logs}<br><br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+						
 					}
 				}
 			}
@@ -56,7 +64,13 @@ pipeline{
 			post{
 				failure{
 					script{
-						echo 'This is SonarQube stage'
+						currentBuild.result = "FAILED"
+						def sonar_report = readFile("${workspace}/FdaServerParent/target/sonar/report-task.txt")
+						subject= "FDA - Build # ${currentBuild.number} -- Frontend Sonar Test ${currentBuild.result}!"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while sonar scanning for frontend.<br>${sonar_report}.<br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+						
 					}
 				}
 			}
@@ -80,7 +94,12 @@ pipeline{
 			post{
 				failure{
 					script{
-						echo 'This is Docker image build stage'	
+						currentBuild.result = "FAILED"
+						subject= "FDA - Build # ${currentBuild.number} -- Frontend Build ${currentBuild.result}!"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while building Docker image.<br><br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+						
 					}
 				}
 			}
@@ -97,7 +116,12 @@ pipeline{
 			post{
 				failure{
 					script{
-						echo 'This is Docker image push stage'	
+						currentBuild.result = "FAILED"
+						subject= "FDA - Build # ${currentBuild.number} -- Frontend Build ${currentBuild.result}!"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while sending Docker image to Docker Hub.<br><br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+						
 					}
 				}
 			}
@@ -122,7 +146,89 @@ pipeline{
 			post{
 				failure{
 					script{
-						echo 'This is Deployment stage'	
+						currentBuild.result = "FAILED"
+						subject= "FDA - Build # ${currentBuild.number} -- Frontend Build ${currentBuild.result}!"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while Deploying Docker container to Dev server.<br><br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+						
+					}
+				}
+			}
+		}
+		stage('Deployment Status'){
+			steps{
+				script{
+					echo "Checking url:- http://$remoteServer:8000/LoginWebApp-1/"
+					sleep 30
+					withCredentials([string(credentialsId: 'githubAccessToken', variable: 'githubAccessToken')]) {
+                        sh '''
+                        new_tag=$(cat /tmp/gitTag)
+                        status=$(curl -so /dev/null -w '%{response_code}' http://$remoteServer:8000/LoginWebApp-1/) || true
+                        if [[ "$status" -eq 200 ]]
+                        then
+							echo "Deployment Successfull"
+                            echo 'SUCCESS' > /tmp/deployment_status
+                            git tag "$new_tag"
+                            git push https://goswami97:"$githubAccessToken"@github.com/goswami97/testingrepo.git --tags
+                        else
+                            echo "Deployment Fail"
+                            echo 'FAIL' > /tmp/deployment_status
+                        fi
+                        '''
+                    }
+					def output=readFile('/tmp/deployment_status').trim()
+					if( "$output" == "FAIL"){
+						echo "Deployment Fail, Reverting to previos build"
+						sh '''
+						current_build=`cat /tmp/gitTag`
+                        major=$(echo "$current_build" | awk -F "." '{print $1}')
+                        minor=$(echo "$current_build" | awk -F "." '{print $2}')
+                        patch=$(echo "$current_build" | awk -F "." '{print $3}')
+                        oldpatch=$(expr $patch - 1)
+						previous_build="${major}.${minor}.${oldpatch}"
+        
+                        echo "Previous tag $previous_build"
+
+                        cont_ID=$(ssh jnsadmin@$remoteServer 'docker ps -qa --filter name=samplewebapp')
+                        ssh jnsadmin@$remoteServer docker rm "${cont_ID}" -f
+                        docker -H ssh://jnsadmin@$remoteServer run --name samplewebapp  -d -p 8000:8080 santoshgoswami/samplewebapp:$previous_build                   
+						'''
+					}else{
+						echo "Deployment Success"
+						
+						def ver=readFile('/tmp/gitTag').trim()
+						def msg=readFile('/tmp/commitID').trim()
+						
+						subject= "FDA - Build # ${currentBuild.number} - DEV Deployment Successful"
+                        body="<html><body>Hi all,<br><br>FDA Container has been deployed on DEV environment.<br>URL: http://$remoteServer:8000/LoginWebApp-1/<br>${msg}<br><br>Regards,<br>DevOps Team.</body></html>"
+                        mail_to="santoshgoswami691@gmail.com"
+                        mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+
+                        subject= "FDA - Build # ${currentBuild.number} -- DEV Revert Request"
+                        body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:red;border-color:red;border:2px solid red;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to revert to previous deployment click on below button.<br><br>Current Deployed FDA Container Version : ${ver}<br><br><table><tr><td class=button><a class=link href=#>Revert</a></td><td></td><td></td></tr></table></body></html>"
+                        mail_to="santoshgoswami691@gmail.com"
+                        mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+                                                            
+                        subject= "FDA - Build # ${currentBuild.number} -- QA Deployment Request"
+                        body= "<html><head><meta http-equiv=Content-Type content=text/html; charset=utf-8><style>.button{background-color:green;border-color:green;border:2px solid green;padding:10px;text-align:center;}.link{display:block;color:#ffffff;font-size:12px;text-decoration:none; text-transform:uppercase;}</style></head><body><br>In order to deploy FDA container on QA environment click on below button.<br><br>FDA Container Version: ${ver}<br><br><table><tr><td class=button><a class=link href=#>Approve</a></td><td></td><td></td></tr></table></body></html>"
+                        mail_to="santoshgoswami691@gmail.com"
+                        mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+                            
+                        echo 'Mail Sent'
+                        
+					}
+				}
+			}
+			post{
+				failure{
+					script{
+						currentBuild.result = "FAILED"
+						subject= "FDA - Build # ${currentBuild.number} -- Frontend Build ${currentBuild.result}!"
+						body="<html><head></head><body>Hi all,<br><br>Some problem occurred while checking deployment status for DEV environment.<br><br>Regards,<br>DevOps Team.</body></html>"
+						mail_to="santoshgoswami691@gmail.com"
+						mail bcc: '', body: "${body}", cc: '', charset: 'UTF-8', from: '',mimeType: 'text/html', replyTo: '', subject: "${subject}", to: "${mail_to}"
+							
 					}
 				}
 			}
