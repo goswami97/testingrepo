@@ -21,7 +21,6 @@ pipeline{
 			steps{
 				sh '''
 				new_tag=$(cat /tmp/gitTag)
-				$WORKSPACE/src/main/webapp/index.jsp
 				sed -i "s/Login Page/Login Page : $new_tag/g" $WORKSPACE/src/main/webapp/index.jsp
                 mvn clean package > /tmp/buildlog
 				'''
