@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+metadata:
+    name: samplewebapp-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: samplewebapp
+    template:
+        metadata:
+            name: pod1
+            labels:
+                app: samplewebapp
+        spec:
+            terminationGracePeriodSeconds: 30
+            containers:
+            - name: pod1
+              image: santoshgoswami/samplewebapp:{{ appver }}
+              imagePullPolicy: "Always"
+            nodeSelector:
+              usage: low
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+    name: samplewebapp-service
+spec:
+    selector:
+        app: samplewebapp
+    type: LoadBalancer
+    ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 31200
