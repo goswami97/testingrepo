@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: samplewebapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: samplewebapp
+  template:
+    metadata:
+      labels:
+        app: samplewebapp
+    spec:
+      containers:
+      - name: samplewebapp
+        image: santoshgoswami/samplewebapp:{{ appver }}
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        ports:
+          - containerPort: 8080
+        command: ["/bin/bash"]
+        args: ["-c", "for i in {1..20}; do echo $i Hello World; sleep 5; done"]
