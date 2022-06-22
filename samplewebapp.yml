@@ -1,25 +1,35 @@
 apiVersion: apps/v1
-kind: Deployment
 metadata:
-  name: samplewebapp
+    name: samplewebapp-deployment
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: samplewebapp
-  template:
-    metadata:
-      labels:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: samplewebapp
+    template:
+        metadata:
+            name: pod1
+            labels:
+                app: samplewebapp
+        spec:
+            terminationGracePeriodSeconds: 30
+            containers:
+            - name: pod1
+              image: santoshgoswami/samplewebapp:{{ appver }}
+              imagePullPolicy: "Always"
+            nodeSelector:
+              usage: low
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+    name: samplewebapp-service
+spec:
+    selector:
         app: samplewebapp
-    spec:
-      containers:
-      - name: samplewebapp
-        image: santoshgoswami/samplewebapp:{{ appver }}
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
-        ports:
-          - containerPort: 8080
-        command: ["/bin/bash"]
-        args: ["-c", "for i in {1..20}; do echo $i Hello World; sleep 5; done"]
+    type: LoadBalancer
+    ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 31200
